@@ -203,14 +203,10 @@ class NamiWrapper {
         if (null == $encoding) {
             switch ($method) {
                 case self::METHOD_POST:
-                    $encoding = self::ENCODING_JSON;
-                    break;
                 case self::METHOD_PUT:
                     $encoding = self::ENCODING_JSON;
                     break;
                 case self::METHOD_GET:
-                    $encoding = self::ENCODING_NO_CONTENT;
-                    break;
                 case self::METHOD_DELETE:
                     $encoding = self::ENCODING_NO_CONTENT;
                     break;
@@ -273,6 +269,15 @@ class NamiWrapper {
             $result = new NWRequestAnswer('Response is not valid JSON.', self::STATUS_CODE_INVALID_JSON);
             $result->response = (object) ['success' => false, 'data' => $response, 'responseType' => 'EXCEPTION', 'message' => null, 'title' => null];
         }
+        // if this is not a login request or auto-login is disabled check for problems with session
+        if ($autoLogin && 'login' != $apiMajor && (null != $apiMajor || 'login' != $this->config['APIVersionMajor'])) {
+            if (self::STATUS_CODE_EXPIRED == $result->statusCode || self::STATUS_CODE_AUTH_ERR == $result->statusCode) {
+                $login = $this->login();
+                if (self::STATUS_CODE_OK == $login->statusCode) {
+                    return $this->request($method, $resource, $content, $apiMajor, $apiMinor, $encoding, false);
+                }
+            }
+        } 
         return $result;
     }
     
