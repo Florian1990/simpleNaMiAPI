@@ -57,20 +57,22 @@ class NamiWrapper {
      *    Ein Login kann mittels der `login`-Funktion durchgeführt werden oder er
      *    wird automatisch bei Bedarf durchgeführt.
      * 3. Mit Übergabe eines Arrays: `new NamiWrapper(['username' => '123456',
-     *    'password' => 'password1234', 'iniFileName' => 'custom.ini'])`. Wird noch ausführlicher
+     *    'password' => 'password1234', 'iniFile' => 'custom.ini'])`. Wird noch ausführlicher
      *    dokumentiert!
      * @param mixed $config Der Benutzername, ein Array mit Parametern oder `null`.
      * @param string $password Das Passwort oder `null`.
      */
     public function __construct($config = null, $password = null) {
         // hard coded standard values;
-        $this->config['iniFileName'] = 'nami.ini';
+        $this->config['iniFile'] = 'nami.ini';
         $this->config['serverURL'] = 'https://nami.dpsg.de';
         $this->config['serverApiPath'] = '/ica/rest/';
         $this->config['serverCookieName'] = 'JSESSIONID';
         $this->config['serverLoginLoginValue'] = 'API';
         $this->config['APIVersionMajor'] = 1;
         $this->config['APIVersionMinor'] = 2;
+        $this->config['username'] = null;
+        $this->config['password'] = null;
         // check if given parameters are valid and throw exception if necessary
         if (!((null == $config && null == $password) || (is_string($config) && is_string($password)) || (is_array($config) && null == $password))) {
             if (is_string($password)) {
@@ -82,17 +84,20 @@ class NamiWrapper {
             throw new InvalidArgumentException('The constructor of NamiWrapper was '
                     . 'provided with invalid parameters. Expected are either no '
                     . 'parameters, two strings or one array! Parameters that were '
-                    . 'provided: \'' . var_export($config, true) . '\', \'' . 
-                    var_export($password, true) . '\'.');
+                    . 'provided: ' . var_export($config, true) . ', ' . 
+                    var_export($password, true) . '.');
         }
         // in case $config is an array, check if custom ini-file is provided
-        if (is_array($config) && is_string($config['iniFileName'])) {
-            $this->config['iniFileName'] = $config['iniFileName'];
+        if (is_array($config) && isset($config['iniFile']) && is_string($config['iniFile'])) {
+            $this->config['iniFile'] = $config['iniFile'];
         }
-        // load ini file and merge with $this->config
-        $configIni = parse_ini_file($this->config['iniFileName'], false, INI_SCANNER_TYPED);
+        // load ini file, if filename is not 'no.ini' and merge with $this->config
+        $configIni = 'no.ini' != $this->config['iniFile'] ?  @parse_ini_file($this->config['iniFile'], false, INI_SCANNER_TYPED) : [];
         if (is_array($configIni)) {
             $this->config = array_merge($this->config, $configIni);
+        } else { // throw exception if ini file could not be loaded
+            throw new RuntimeException('ini file ' . var_export($this->config['iniFile'], true)
+                    . ' could not be opened or parsed!');
         }
         // in case $config is an array, merge with $this->config
         if (is_array($config)) {
@@ -143,8 +148,8 @@ class NamiWrapper {
             return 'api/' . $arg1 . '/' . $arg2 . '/service/';
         }
         throw new InvalidArgumentException('apiVersion2UrlString expects \'login\','
-                . ' two non-negative integers or null as argument(s). Arguments given: \''
-                . var_export($arg1, true) . '\', \'' . var_export($arg2, true) . '\'.');
+                . ' two non-negative integers or null as argument(s). Arguments given: '
+                . var_export($arg1, true) . ', ' . var_export($arg2, true) . '.');
     }
     
     /**
@@ -182,7 +187,7 @@ class NamiWrapper {
         // check if method is valid method
         if (!self::_isValidMethod($method)) {
             throw new InvalidArgumentException('request expects a valid HTTP method'
-                    . ' string. Value provided: \'' . var_export($method, true) . '\'.');
+                    . ' string. Value provided: ' . var_export($method, true) . '.');
         }
         // check if encoding is valid encoding and populate with default value
         if (null == $encoding) {
@@ -203,7 +208,7 @@ class NamiWrapper {
         }
         if (!self::_isValidEncoding($encoding)) {
             throw new InvalidArgumentException('request excepts a valid encoding '
-                    . 'string or null. Value provided: \'' . var_export($encoding, true) . '\'.');
+                    . 'string or null. Value provided: ' . var_export($encoding, true) . '.');
         }
         // Add basic HTTP properties
         $httpsOpts = ['http' => [
