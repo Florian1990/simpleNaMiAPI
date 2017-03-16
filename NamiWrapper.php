@@ -36,6 +36,10 @@ class NamiWrapper {
     CONST STATUS_CODE_EXCEPTION = 3002;
     CONST STATUS_CODE_UNKNOWN_ERR = 3099;
     
+    // custom status codes
+    CONST STATUS_CODE_INVALID_JSON = 6001;
+    CONST STATUS_CODE_CONNECTION_FAILED = 6002;
+    
     CONST MIME_JSON = 'application/json';
     CONST MIME_URL_ENCODED = 'application/x-www-form-urlencoded';
     
@@ -46,7 +50,8 @@ class NamiWrapper {
     
     private $config = [];
     
-    private $cookie;
+    private $apiSessionName = 'JSESSIONID'; // default value will be overwritten after login
+    private $apiSessionToken;
     private $lastLoginResponse;
     
     /**
@@ -67,10 +72,10 @@ class NamiWrapper {
         $this->config['iniFile'] = 'nami.ini';
         $this->config['serverURL'] = 'https://nami.dpsg.de';
         $this->config['serverApiPath'] = '/ica/rest/';
-        $this->config['serverCookieName'] = 'JSESSIONID';
         $this->config['serverLoginLoginValue'] = 'API';
         $this->config['APIVersionMajor'] = 1;
         $this->config['APIVersionMinor'] = 2;
+        $this->config['timeout'] = 7.0;
         $this->config['username'] = null;
         $this->config['password'] = null;
         // check if given parameters are valid and throw exception if necessary
@@ -92,7 +97,10 @@ class NamiWrapper {
             $this->config['iniFile'] = $config['iniFile'];
         }
         // load ini file, if filename is not 'no.ini' and merge with $this->config
-        $configIni = 'no.ini' != $this->config['iniFile'] ?  @parse_ini_file($this->config['iniFile'], false, INI_SCANNER_TYPED) : [];
+        $tempErr = error_reporting();
+        error_reporting($tempErr & ~E_WARNING);
+        $configIni = 'no.ini' != $this->config['iniFile'] ?  parse_ini_file($this->config['iniFile'], false, INI_SCANNER_TYPED) : [];
+        error_reporting($tempErr);
         if (is_array($configIni)) {
             $this->config = array_merge($this->config, $configIni);
         } else { // throw exception if ini file could not be loaded
@@ -182,8 +190,10 @@ class NamiWrapper {
      * NamiWrapper::ENCODING_JSON_MANUAL erwartet bereits JSON-kodierten Inhalt und
      * NamiWrapper::ENCODING_NO_CONTENT (Standard für GET- und DELETE-Anfragen) bedeutet,
      * dass kein Inhalt gesendet wird.
+     * @param boolean $autoLogin Optional. Standardmäßig wird ein automatischer Login-Versuch
+     * unternommen. Falls $autoLogin `false` ist, wird dies unterlassen.
      */
-    public function request($method, $resource, $content = null, $apiMajor = null, $apiMinor = null, $encoding = null) {
+    public function request($method, $resource, $content = null, $apiMajor = null, $apiMinor = null, $encoding = null, $autoLogin = true) {
         // check if method is valid method
         if (!self::_isValidMethod($method)) {
             throw new InvalidArgumentException('request expects a valid HTTP method'
@@ -213,7 +223,8 @@ class NamiWrapper {
         // Add basic HTTP properties
         $httpsOpts = ['http' => [
                 'method' => $method,
-                'header' => 'Cookie: ' . $this->config['serverCookieName'] . '=' . $this->cookie . "\r\n"
+                'header' => 'Cookie: ' . $this->apiSessionName . '=' . $this->apiSessionToken . "\r\n",
+                'timeout' => $this->config['timeout']
             ],
         ];
         // add content if available
@@ -246,9 +257,23 @@ class NamiWrapper {
                     . ' ini file.', 0, $e);
         }
         $url = $this->config['serverURL'] . $this->config['serverApiPath'] . $apiVersion . $resource;
-        // make HTTP request
+        // make HTTP request; disable warnings since failed to open stream is likely to occour
+        $tempErr = error_reporting();
+        error_reporting($tempErr & ~E_WARNING);
         $response = file_get_contents($url, false, $context);
-        return json_decode($response);
+        error_reporting($tempErr);
+        // report error if necessary
+        if (false == $response) {
+            $result = new NWRequestAnswer('Could not acces API located at ' . var_export($url, true) . '.', self::STATUS_CODE_CONNECTION_FAILED);
+        } else { // otherwise decode response
+            $result = json_decode($response);
+        }
+        // report error in case of invalid json
+        if (null == $result && null != $response) {
+            $result = new NWRequestAnswer('Response is not valid JSON.', self::STATUS_CODE_INVALID_JSON);
+            $result->response = (object) ['success' => false, 'data' => $response, 'responseType' => 'EXCEPTION', 'message' => null, 'title' => null];
+        }
+        return $result;
     }
     
     public function login($username = null, $password = null) {
@@ -260,8 +285,25 @@ class NamiWrapper {
         }
         $content = ['Login' => $this->config['serverLoginLoginValue'], 'username' => $username, 'password' => $password];
         $response = $this->request(self::METHOD_POST, 'nami/auth/manual/sessionStartup', $content, 'login', null, self::ENCODING_URL);
-        $this->cookie = $response->apiSessionToken;
+        $this->apiSessionName = $response->apiSessionName;
+        $this->apiSessionToken = $response->apiSessionToken;
         $this->lastLoginResponse = $response;
         return $response;
+    }
+}
+
+class NWRequestAnswer {
+    public $servicePrefix = null;
+    public $methodCall = null;
+    public $statusCode;
+    public $statusMessage;
+    public $apiSessionName = null;
+    public $apiSessionToken = null;
+    public $minorNumber = 0;
+    public $majorNumber = 0;
+    
+    public function __construct($statusMessage, $statusCode) {
+        $this->statusMessage = $statusMessage;
+        $this->statusCode = $statusCode;
     }
 }
