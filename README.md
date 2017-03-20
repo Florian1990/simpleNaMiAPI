@@ -6,10 +6,10 @@ Anwendungen dienen und umfasst deshalb nur einen minimalen Funktionsumfang.
 
 ## Entwicklungsstatus: Version 0.5
 
-Derzeit ist der volle geplante Funktionsumfang noch nicht erreicht. Es handelt
-sich derzeit also noch nicht um stabile Versionen. Die Funktionalität ist also
-noch eingeschränkt und wird noch ausgebaut. Im Zuge dessen können auch noch
-Veränderungen an bereits implementierter Funktionalität vorgenommen werden.
+Bislang ist der volle geplante Funktionsumfang nicht erreicht. Es handelt sich
+derzeit um instabile Versionen. Die Funktionalität ist also noch eingeschränkt
+und wird noch ausgebaut. Im Zuge dessen können auch Veränderungen an bereits
+implementierter Funktionalität vorgenommen werden.
 
 ## Über die NaMi
 
