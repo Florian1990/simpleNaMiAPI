@@ -281,6 +281,16 @@ class NamiWrapper {
         return $result;
     }
     
+    /**
+     * Startet eine Session.
+     * @param string $username Optional. Der Benutzername, der zum Login verwendet
+     * werden soll. Wird kein Benutzername übergeben, wird der im Konstruktor angegebene
+     * Nutzername verwendet.
+     * @param string $password Optional. Das Passwort, das zum Login verwendet werden
+     * soll. Wird kein Passwort übergeben, wird das im Konstruktor angegebene Passwort
+     * verwendet.
+     * @return object Die Antwort auf die Login-Anfrage.
+     */
     public function login($username = null, $password = null) {
         if (null == $username) {
             $username = $this->config['username'];
@@ -294,6 +304,23 @@ class NamiWrapper {
         $this->apiSessionToken = $response->apiSessionToken;
         $this->lastLoginResponse = $response;
         return $response;
+    }
+    
+    /**
+     * Beendet die aktuelle Session.
+     * @param boolean $deleteLoginCredentials Optional. Falls `$deleteLoginCredentials`
+     * `true` ist, werden eventuell an den Konstruktor übergebene Anmeldedaten gelöscht.
+     * Standardwert ist `false`.
+     * @return object Die Antwort auf die Logout-Anfrage. (Hinweis: Derzeit scheint
+     * NaMi keine Antwort auf Logout-Anfragen zu geben. Es wird deshalb eine Antwort
+     * mit dem (von dieser Klasse eingeführten) Statuscode 6002 zurück gegeben.
+     */
+    public function logout($deleteLoginCredentials = false) {
+        if ($deleteLoginCredentials) {
+            unset($this->config['username']);
+            unset($this->config['password']);
+        }
+        return $this->request(self::METHOD_GET, 'nami/auth/logout', null, 'login', null);
     }
 }
 
