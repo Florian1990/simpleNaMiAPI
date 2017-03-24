@@ -4,7 +4,7 @@ simpleNaMiAPI ist ein Versuch, eine einfache Schnittstelle für den Zugriff auf
 die NaMi mithilfe von php zu realisieren. Sie soll als Grundlage für andere
 Anwendungen dienen und umfasst deshalb nur einen minimalen Funktionsumfang.
 
-## Entwicklungsstatus: Version 0.5
+## Entwicklungsstatus: Version 1.0
 
 Bislang ist der volle geplante Funktionsumfang nicht erreicht. Es handelt sich
 derzeit um instabile Versionen. Die Funktionalität ist also noch eingeschränkt
@@ -27,7 +27,7 @@ entsprechenden Hinweis freuen.
 ## Systemvoraussetzungen
 Die Voraussetzungen zum Einsatz von simpleNaMiAPI sind sehr gering gehalten.
 Beispielsweise kommt simpleNaMiAPI ohne cURL aus. Außerdem wird vorerst auf
-php-Namespaces verzichtet. Genaue Systemanforderungen wurden bislang nicht
+PHP-7-Features verzichtet. Genaue Systemanforderungen wurden bislang nicht
 ermittelt.
 
 ## Funktionsumfang
@@ -47,14 +47,13 @@ gestellt.
 Wer Bugs findet, ist herzlich dazu eingeladen, diese zu melden. Wer den Bug
 gleich selbst beheben kann, darf auch gerne einen Pull Request erstellen.
 
-## Roadmap bis Version 1.0:
+## Roadmap
 
-* [x] Login-Funktionalität
-* [x] automatisches Login
-* [ ] Mechanismen zum Umgang mit Session-Token
-* [x] Logout-Funktionalität
-* [x] Möglichkeitm, Anfragen an die NaMi zu stellen
-
+Vorerst sollen nur Bugfixes und Sicherheitsupdates durchgeführt werden.
 Zusätzliche Funktionalität möchte ich nur implementieren, wenn davon auszugehen
 ist, dass ein Großteil der auf simpleNaMiAPI aufbauenden Projekte diese
 benötigt.
+
+Sobald sich PHP 7 durchgesetzt hat und bei den gängigsten Open-Source-Projekten
+eingesetzt wird, möchte ich überprüfen, welche neuen Features zur Verbesserung
+von SimpleNaMiAPI beitragen können.

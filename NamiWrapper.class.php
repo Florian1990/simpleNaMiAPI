@@ -76,6 +76,9 @@ class NamiWrapper {
         $this->config['APIVersionMajor'] = 1;
         $this->config['APIVersionMinor'] = 2;
         $this->config['timeout'] = 7.0;
+        $this->config['saveCookieInFile'] = false;
+        $this->config['cookieFile'] = 'tmp/cookie.tmp';
+        $this->config['createDirectoryMode'] = 0600;
         $this->config['username'] = null;
         $this->config['password'] = null;
         // check if given parameters are valid and throw exception if necessary
@@ -115,6 +118,17 @@ class NamiWrapper {
         else {
             $this->config['username'] = $config;
             $this->config['password'] = $password;
+        }
+        // process references to api sessions
+        $this->apiSessionName =& $this->config['apiSessionNameRef'];
+        $this->apiSessionToken =& $this->config['apiSessionTokenRef'];
+        // load session from file
+        if ($this->config['saveCookieInFile']) {
+            $cookie = explode('=', @file_get_contents($this->config['cookieFile']));
+            if (is_string($cookie[0]) && isset($cookie[1]) && is_string($cookie[1])) {
+                $this->apiSessionName = $cookie[0];
+                $this->apiSessionToken = $cookie[1];
+            }
         }
     }
     
@@ -303,6 +317,22 @@ class NamiWrapper {
         $this->apiSessionName = $response->apiSessionName;
         $this->apiSessionToken = $response->apiSessionToken;
         $this->lastLoginResponse = $response;
+        if ($this->config['saveCookieInFile']) {
+            $pathParts = pathinfo($this->config['cookieFile']);
+            // create folder if it does not exist
+            if (!file_exists($pathParts['dirname'])) {
+                mkdir($pathParts['dirname'], (int) $this->config['createDirectoryMode'], true);
+                echo $this->config['createDirectoryMode'];
+            }
+            $file = @fopen($this->config['cookieFile'], 'w');
+            if ($file) {
+                $success = fwrite($file, $this->apiSessionName . '=' . $this->apiSessionToken);
+            }
+            if (!($file && $success)) {
+                throw new RuntimeException('Could not write to file '
+                        . var_export($this->config['cookieFile'], true) . '.');
+            }
+        }
         return $response;
     }
     
