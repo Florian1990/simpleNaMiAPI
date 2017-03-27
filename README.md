@@ -6,10 +6,8 @@ Anwendungen dienen und umfasst deshalb nur einen minimalen Funktionsumfang.
 
 ## Entwicklungsstatus: Version 1.0
 
-Bislang ist der volle geplante Funktionsumfang nicht erreicht. Es handelt sich
-derzeit um instabile Versionen. Die Funktionalität ist also noch eingeschränkt
-und wird noch ausgebaut. Im Zuge dessen können auch Veränderungen an bereits
-implementierter Funktionalität vorgenommen werden.
+Vorläufig finale und stabile Version. Pläne zur Weiterentwicklung sind in der
+[Roadmap](#roadmap) beschrieben.
 
 ## Über die NaMi
 
@@ -52,7 +50,8 @@ gleich selbst beheben kann, darf auch gerne einen Pull Request erstellen.
 Vorerst sollen nur Bugfixes und Sicherheitsupdates durchgeführt werden.
 Zusätzliche Funktionalität möchte ich nur implementieren, wenn davon auszugehen
 ist, dass ein Großteil der auf simpleNaMiAPI aufbauenden Projekte diese
-benötigt.
+benötigt. Möglicherweise machen auch Änderungen an NaMi eine Weiterentwicklung
+nötig.
 
 Sobald sich PHP 7 durchgesetzt hat und bei den gängigsten Open-Source-Projekten
 eingesetzt wird, möchte ich überprüfen, welche neuen Features zur Verbesserung
