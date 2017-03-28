@@ -321,8 +321,7 @@ class NamiWrapper {
             $pathParts = pathinfo($this->config['cookieFile']);
             // create folder if it does not exist
             if (!file_exists($pathParts['dirname'])) {
-                mkdir($pathParts['dirname'], (int) $this->config['createDirectoryMode'], true);
-                echo $this->config['createDirectoryMode'];
+                mkdir($pathParts['dirname'], intval($this->config['createDirectoryMode'], 0), true);
             }
             $file = @fopen($this->config['cookieFile'], 'w');
             if ($file) {

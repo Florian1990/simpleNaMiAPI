@@ -4,7 +4,7 @@ simpleNaMiAPI ist ein Versuch, eine einfache Schnittstelle für den Zugriff auf
 die NaMi mithilfe von php zu realisieren. Sie soll als Grundlage für andere
 Anwendungen dienen und umfasst deshalb nur einen minimalen Funktionsumfang.
 
-## Entwicklungsstatus: Version 1.0
+## Entwicklungsstatus: Version 1.1
 
 Vorläufig finale und stabile Version. Pläne zur Weiterentwicklung sind in der
 [Roadmap](#roadmap) beschrieben.
