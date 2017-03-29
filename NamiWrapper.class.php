@@ -95,35 +95,40 @@ class NamiWrapper {
                     . 'provided: ' . var_export($config, true) . ', ' . 
                     var_export($password, true) . '.');
         }
-        // in case $config is an array, check if custom ini-file is provided
-        if (is_array($config) && isset($config['iniFile']) && is_string($config['iniFile'])) {
+        // in case username and password are directly provided, convert to array
+        if ($password) {
+            $config = ['username' => $config, 'password' => $password];
+        }
+        // check if custom ini-file is provided
+        if (isset($config['iniFile']) && is_string($config['iniFile'])) {
             $this->config['iniFile'] = $config['iniFile'];
         }
         // load ini file, if filename is not 'no.ini' and merge with $this->config
-        $tempErr = error_reporting();
-        error_reporting($tempErr & ~E_WARNING);
-        $configIni = 'no.ini' != $this->config['iniFile'] ?  parse_ini_file($this->config['iniFile'], false, INI_SCANNER_TYPED) : [];
-        error_reporting($tempErr);
+        $configIni = ('no.ini' != $this->config['iniFile']) ?  @parse_ini_file($this->config['iniFile'], false, INI_SCANNER_TYPED) : [];
         if (is_array($configIni)) {
             $this->config = array_merge($this->config, $configIni);
         } else { // throw exception if ini file could not be loaded
             throw new RuntimeException('ini file ' . var_export($this->config['iniFile'], true)
                     . ' could not be opened or parsed!');
         }
-        // in case $config is an array, merge with $this->config
-        if (is_array($config)) {
-            $this->config = array_merge($this->config, $config);
-        }
-        // in case username and password are directly provided, save them
-        else {
-            $this->config['username'] = $config;
-            $this->config['password'] = $password;
-        }
+        // merge $config with $this->config
+        $this->config = array_merge($this->config, $config);
         // process references to api sessions
         $this->apiSessionName =& $this->config['apiSessionNameRef'];
         $this->apiSessionToken =& $this->config['apiSessionTokenRef'];
         // load session from file
         if ($this->config['saveCookieInFile']) {
+            // check path format and convert to absolute path
+            if(preg_match('/^[^\.\/][^:]/', $this->config['cookieFile'])) {
+                $this->config['cookieFile'] = __DIR__ . '/' . $this->config['cookieFile'];
+            }
+            if(!preg_match('/^(([A-Z]|[a-z]):|\/)/', $this->config['cookieFile'])) {
+                throw new UnexpectedValueException('NamiWrapper expects an absolute'
+                        . ' path for $config[\'cookieFile\']. You may also provide'
+                        . ' a path in the form of \'path/to/file.ext\'. which will'
+                        . ' be appended to the directory of simplenamiapi. You provided '
+                        . var_export($this->config['cookieFile'], true) . '.');
+            }
             $cookie = explode('=', @file_get_contents($this->config['cookieFile']));
             if (is_string($cookie[0]) && isset($cookie[1]) && is_string($cookie[1])) {
                 $this->apiSessionName = $cookie[0];
