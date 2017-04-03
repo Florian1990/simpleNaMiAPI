@@ -32,6 +32,11 @@ ermittelt.
 
 [Dokumentation](http://htmlpreview.github.io/?https://github.com/Florian1990/simpleNaMiAPI-doc/blob/master/index.html)
 
+(Die selbe [Dokumentation (RawGit-Link)](https://cdn.rawgit.com/Florian1990/simpleNaMiAPI-doc/a81da5f81db80ab8cb384b18d99b82dc19f9bc1a/index.html)
+ist mithilfe von [RawGit](https://github.com/rgrove/rawgit) stabiler verfügbar.
+Rawgit läuft auf externen Servern und stellt keine Datenschutzrichtlinie zur
+Verfügung!)
+
 ## Lizenz
 
 Ich würde mich freuen, wenn simpleNaMiAPI als Basis vieler NaMi-Projekte
