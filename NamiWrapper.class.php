@@ -56,14 +56,74 @@ class NamiWrapper {
     
     /**
      * Konstruktor. Der Konstruktor kann auf drei Arten aufgerufen werden:
+     * 
      * 1. Ohne Übergabe von Parametern: `new NamiWrapper()`. Login-Daten müssen dann
      *    der ´login´-Funktion übergeben werden.
+     * 
      * 2. Mit Übergabe von Nutzername und Passwort: `new NamiWrapper('123456', 'password1234')`.
      *    Ein Login kann mittels der `login`-Funktion durchgeführt werden oder er
      *    wird automatisch bei Bedarf durchgeführt.
+     * 
      * 3. Mit Übergabe eines Arrays: `new NamiWrapper(['username' => '123456',
-     *    'password' => 'password1234', 'iniFile' => 'custom.ini'])`. Wird noch ausführlicher
-     *    dokumentiert!
+     *    'password' => 'password1234', 'iniFile' => 'custom.ini'])`. Folgende Schlüssel
+     *    können gesetzt werden:
+     * 
+     *    * iniFile: Standardwert: `nami.ini`. Eine Konfigurationsdatei, die im
+     *      wesentlichen die selben Parameter  erwartet, wie $config. Neben `nami.ini`
+     *      wird auch `namitest.ini` mitgeliefert. Eigene Konfigurationsdateien
+     *      können selbstverständlich auch erstellt werden. Soll keine Konfigurationsdatei
+     *      verarbeitet werden, so kann `no.ini` übergeben werden.
+     * 
+     *    * serverURL: Standardwert: `https://nami.dpsg.de`. URL des Servers, auf
+     *      dem die NaMi-API verfügbar ist.
+     * 
+     *    * serverApiPath: Standardwert: `/ica/rest/`. Pfad unter dem die API erreicht
+     *      werden kann.
+     * 
+     *    * serverLoginLoginValue: Standartwert: `API`. Wert, der bei Login-Anfragen
+     *      an die API im Feld `Login` geschickt wird.
+     * 
+     *    * APIVersionMajor: Standardwert: `1`. Hauptversionsnummer der API.
+     * 
+     *    * APIVersionMinor: Standardwert: `2`. Nebenversionsnummer der API.
+     * 
+     *    * timeout: Standartwert: `7.0`. Zeit, nach der Anfragen an die API abgebrochen
+     *      werden.
+     * 
+     *    * saveCookieInFile: Standardwert: `false`. Legt fest, ob die aktuelle
+     *      Session in einer Datei gespeichert werden soll.
+     * 
+     *    * cookieFile: Standardwert: `tmp/cookie.tmp`. Pfad zu der Datei, in der
+     *      ggf. die aktuelle Session gespeichert werden soll. Achtung! Stellen
+     *      Sie sicher, dass auf diese Datei nicht aus dem Weg zugegriffen werden
+     *      kann. Zur Sicherheit werden nur 1. absolute Pfade und 2. Pfade der Form
+     *      `pfad/zu/datei.ext` akzeptiert. Zweite werden an `pfad/zu/simpleNaMiAPI/`
+     *      angehängt.
+     * 
+     *    * createDirectoryMode: Standardwert `0600`. Zugriffsberechtigung, mit
+     *      der ggf. das Verzeichnis der Cookie-Datei erstellt wird (Suche nach
+     *      chmod).
+     * 
+     *    * unsername: Standardwert: `null`. Benutzername, der beim Login verwendet
+     *      werden soll. Kann auch bei einer expliziten Login-Anfrage erst übergeben
+     *      werden (vgl. Funktion `login()`).
+     * 
+     *    * password: Standardwert: `null`. Passwort, das beim Login verwendet
+     *      werden soll. Kann auch bei einer expliziten Login-Anfrage erst übergeben
+     *      werden (vgl. Funktion `login()`).
+     * 
+     *    * apiSessionNameRef: Standardmäßig nicht gesetzt. Wert muss als Referenz
+     *      übergeben werden! Referenziert immer den Namen der aktuellen Session.
+     *      Kann genutzt werden, um die aktuelle Session in der PHP-Session des
+     *      Nutzers zu speichern: `$namiOpts['apiSessionNameRef'] =& $_SESSION['apiSessionName'];
+     *      (…) $nw = new NamiWrapper($namiOpts);`
+     * 
+     *    * apiSessionTokenRef: Standardmäßig nicht gesetzt. Wert muss als Referenz
+     *      übergeben werden! Referenziert immer das Token der aktuellen Session.
+     *      Kann genutzt werden, um die aktuelle Session in der PHP-Session des
+     *      Nutzers zu speichern: `$namiOpts['apiSessionTokenRef'] =& $_SESSION['apiSessionToken'];
+     *      (…) $nw = new NamiWrapper($namiOpts);`
+     * 
      * @param mixed $config Der Benutzername, ein Array mit Parametern oder `null`.
      * @param string $password Das Passwort oder `null`.
      */
@@ -197,20 +257,20 @@ class NamiWrapper {
      * @param string $method Die zu verwendende HTTP-Methode (siehe Klassenkonstanten).
      * @param string $resource Die betroffene Ressource (Teil der URL, der nach `service/`
      * kommt).
-     * @param object $content null oder Objekt, abhängig von Methode und Ressource.
+     * @param object $content `null` oder Objekt, abhängig von Methode und Ressource.
      * Wird JSON- bzw. URL-kodiert.
      * @param mixed $apiMajor Hauptversionsnummer der API (int) oder `login`, falls
      * eine Login-Abfrage geschickt werden soll. Optional, falls ein Standardwert gesetzt wurde.
      * @param mixed $apiMinor Nebenversionsnummer der API (int) oder `null`, falls
      * eine Login-Abfrage geschickt werden soll. Optional, falls ein Standardwert gesetzt wurde.
-     * @param string $encoding Optional. NamiWrapper::ENCODING_JSON sorgt für eine
-     * JSON-Kodierung (Standardwert für POST- und PUT-Anfragen), NamiWrapper::ENCODING_URL
+     * @param string $encoding Optional. `NamiWrapper::ENCODING_JSON` sorgt für eine
+     * JSON-Kodierung (Standardwert für POST- und PUT-Anfragen), `NamiWrapper::ENCODING_URL`
      * sorg für URL-Kodierung (wird vmtl. ausschließlich bei Login-Anfragen erwartet),
-     * NamiWrapper::ENCODING_JSON_MANUAL erwartet bereits JSON-kodierten Inhalt und
-     * NamiWrapper::ENCODING_NO_CONTENT (Standard für GET- und DELETE-Anfragen) bedeutet,
+     * `NamiWrapper::ENCODING_JSON_MANUAL` erwartet bereits JSON-kodierten Inhalt und
+     * `NamiWrapper::ENCODING_NO_CONTENT` (Standard für GET- und DELETE-Anfragen) bedeutet,
      * dass kein Inhalt gesendet wird.
      * @param boolean $autoLogin Optional. Standardmäßig wird ein automatischer Login-Versuch
-     * unternommen. Falls $autoLogin `false` ist, wird dies unterlassen.
+     * unternommen. Falls `$autoLogin` `false` ist, wird dies unterlassen.
      */
     public function request($method, $resource, $content = null, $apiMajor = null, $apiMinor = null, $encoding = null, $autoLogin = true) {
         // check if method is valid method

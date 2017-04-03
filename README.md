@@ -30,7 +30,7 @@ ermittelt.
 
 ## Funktionsumfang
 
-Folgt.
+[Dokumentation](http://htmlpreview.github.io/?https://github.com/Florian1990/simpleNaMiAPI-doc/blob/master/index.html)
 
 ## Lizenz
 
