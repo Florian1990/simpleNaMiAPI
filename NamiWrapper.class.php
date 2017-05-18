@@ -203,8 +203,7 @@ class NamiWrapper {
      * @return boolean `true`, falls es sich um eine valide HTTP-Methoden-Bezeichung handelt, andernfalls `false`.
      */
     private static function _isValidMethod($method) {
-        return (self::METHOD_POST == $method || self::METHOD_PUT == $method ||
-                self::METHOD_GET == $method || self::METHOD_DELETE);
+        return in_array($method, [self::METHOD_POST, self::METHOD_GET, self::METHOD_PUT, self::METHOD_DELETE]);
     }
     
     /**
