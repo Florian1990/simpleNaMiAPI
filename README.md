@@ -1,3 +1,7 @@
+# Das Repository ist umgezogen!
+
+[simpleNaMiAPI wird auf Bitbucket weiterentwickelt.](https://bitbucket.org/Florian_1990/simplenamiapi)
+
 # simpleNaMiAPI
 
 simpleNaMiAPI ist ein Versuch, eine einfache Schnittstelle für den Zugriff auf
